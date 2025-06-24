@@ -201,4 +201,69 @@
 <h3>Forgot Password</h3>
 <input type="text" id="forgotPhone" placeholder="Enter your phone">
 <button onclick="recoverPassword()">Forgot Password</button>
-</html>
+</html><script>
+  let users = JSON.parse(localStorage.getItem('users')) || [];
+  let loggedInUser = localStorage.getItem('loggedInUser');
+
+  function registerUser() {
+    const phone = document.getElementById('regPhone').value;
+    const password = document.getElementById('regPassword').value;
+    const ref = new URLSearchParams(window.location.search).get("ref");
+
+    if (users.find(u => u.phone === phone)) {
+      alert("This phone number is already registered!");
+      return;
+    }
+
+    const newUser = {
+      phone,
+      password,
+      balance: 0,
+      referrals: [],
+      referralBonus: 0,
+      invested: []
+    };
+
+    users.push(newUser);
+    localStorage.setItem('users', JSON.stringify(users));
+    localStorage.setItem('loggedInUser', phone);
+
+    if (ref && ref !== phone) {
+      const referrer = users.find(u => u.phone === ref);
+      if (referrer) {
+        referrer.referrals.push(phone);
+        referrer.referralBonus += 200;
+        referrer.balance += 200;
+        localStorage.setItem('users', JSON.stringify(users));
+      }
+    }
+
+    alert("Registered successfully!");
+    window.location.href = "home.html";
+  }
+
+  function loginUser() {
+    const phone = document.getElementById('loginPhone').value;
+    const password = document.getElementById('loginPassword').value;
+
+    const found = users.find(u => u.phone === phone && u.password === password);
+    if (!found) {
+      alert("Incorrect phone or password");
+      return;
+    }
+
+    localStorage.setItem('loggedInUser', phone);
+    alert("Login successful!");
+    window.location.href = "home.html";
+  }
+
+  function recoverPassword() {
+    const phone = document.getElementById('forgotPhone').value;
+    const user = users.find(u => u.phone === phone);
+    if (!user) {
+      alert("No account found with this phone.");
+    } else {
+      alert("Your password is: " + user.password);
+    }
+  }
+</script>
