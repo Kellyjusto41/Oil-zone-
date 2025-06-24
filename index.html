@@ -1,141 +1,176 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Oil Zone Investment - Login/Register</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Oil Zone Investment</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f9;
-      padding: 20px;
-      color: #333;
-    }
-    h2 { margin-bottom: 10px; }
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 6px 0;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-    button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      background-color: #0a74da;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #064b9c;
-    }
-    .box {
-      max-width: 400px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    .section {
-      margin-top: 30px;
-    }
+    body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; }
+    .container { padding: 20px; max-width: 500px; margin: auto; }
+    h2 { margin-top: 20px; }
+    input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 8px; }
+    button { width: 100%; padding: 12px; background: #0056d2; color: white; border: none; border-radius: 8px; font-weight: bold; }
+    .hidden { display: none; }
+    .nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #fff; border-top: 1px solid #ccc; }
+    .nav button { flex: 1; padding: 10px; font-size: 16px; background: white; border: none; }
+    .active-tab { background: #e0e0e0; }
+
+    .slider img { width: 100%; border-radius: 10px; }
+    .product { background: white; border-radius: 10px; padding: 10px; margin: 10px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .product img { width: 100%; border-radius: 10px; }
+    .wallet-item { margin: 10px 0; padding: 10px; background: white; border-radius: 10px; }
+
+    .tabs > div { display: none; }
+    .tabs > .show { display: block; }
+
+    .small { font-size: 14px; color: gray; text-align: center; margin-top: 10px; }
   </style>
 </head>
 <body>
-  <div class="box">
-    <h2>🔐 Register</h2>
-    <input type="text" id="regPhone" placeholder="Phone Number">
-    <input type="password" id="regPassword" placeholder="Password">
-    <button onclick="registerUser()">Register</button>
+  <div class="container">
+    <!-- Register/Login Section -->
+    <div id="auth">
+      <h2>🔐 Register</h2>
+      <input type="text" id="regPhone" placeholder="10-digit Phone Number">
+      <input type="password" id="regPass" placeholder="6-digit Password">
+      <button onclick="register()">Register</button>
 
-    <div class="section">
       <h2>🔓 Login</h2>
-      <input type="text" id="loginPhone" placeholder="Phone Number">
-      <input type="password" id="loginPassword" placeholder="Password">
-      <button onclick="loginUser()">Login</button>
+      <input type="text" id="logPhone" placeholder="Phone Number">
+      <input type="password" id="logPass" placeholder="Password">
+      <button onclick="login()">Login</button>
+
+      <h2>🔑 Forgot Password</h2>
+      <input type="text" placeholder="Enter your phone">
+      <button>Recover Password</button>
     </div>
 
-    <div class="section">
-      <h2>🔑 Forgot Password</h2>
-      <input type="text" id="forgotPhone" placeholder="Enter your phone">
-      <button onclick="recoverPassword()">Recover Password</button>
+    <!-- Main App Section -->
+    <div id="app" class="hidden">
+      <!-- Tabs -->
+      <div class="tabs">
+        <div id="home" class="show">
+          <h2>Welcome to Oil Zone Investment</h2>
+          <div class="slider">
+            <img src="https://images.unsplash.com/photo-1572295529532-10604ebf97bd" />
+            <img src="https://images.unsplash.com/photo-1588600940302-8bfe01a9567f" />
+            <img src="https://images.unsplash.com/photo-1603899124023-099d2a43f03d" />
+            <img src="https://images.unsplash.com/photo-1615900383857-5759eb2287cc" />
+          </div>
+          <p class="small">Investing in oil has never been easier. Start today and earn daily income for 60 days!</p>
+        </div>
+
+        <div id="products">
+          <h2>🛢️ Investment Products</h2>
+          <div id="productList"></div>
+        </div>
+
+        <div id="wallet">
+          <h2>💰 Wallet</h2>
+          <div class="wallet-item">Balance: <span id="balance">KES 0</span></div>
+          <div class="wallet-item"><button onclick="recharge()">Recharge</button></div>
+          <div class="wallet-item"><button onclick="withdraw()">Withdraw</button></div>
+          <div class="wallet-item"><button onclick="viewRecords()">View Records</button></div>
+        </div>
+      </div>
+
+      <!-- Bottom Nav -->
+      <div class="nav">
+        <button onclick="showTab('home')">🏠 Home</button>
+        <button onclick="showTab('products')">📦 Products</button>
+        <button onclick="showTab('wallet')">👛 Wallet</button>
+      </div>
     </div>
   </div>
 
   <script>
-    let users = JSON.parse(localStorage.getItem('users')) || [];
-    let loggedInUser = localStorage.getItem('loggedInUser');
+    let balance = 0;
+    let incomeTimers = {};
 
-    function registerUser() {
-      const phone = document.getElementById('regPhone').value.trim();
-      const password = document.getElementById('regPassword').value.trim();
-      const ref = new URLSearchParams(window.location.search).get("ref");
-
-      if (!phone || !password) {
-        alert("Please enter both phone and password");
+    function register() {
+      const phone = document.getElementById('regPhone').value;
+      const pass = document.getElementById('regPass').value;
+      if (phone.length !== 10 || pass.length !== 6) {
+        alert('Phone must be 10 digits and password 6 digits');
         return;
       }
-
-      if (users.find(u => u.phone === phone)) {
-        alert("This phone number is already registered!");
-        return;
-      }
-
-      const newUser = {
-        phone,
-        password,
-        balance: 0,
-        referrals: [],
-        referralBonus: 0,
-        invested: []
-      };
-
-      users.push(newUser);
-      localStorage.setItem('users', JSON.stringify(users));
-      localStorage.setItem('loggedInUser', phone);
-
-      // Referral
-      if (ref && ref !== phone) {
-        const referrer = users.find(u => u.phone === ref);
-        if (referrer) {
-          referrer.referrals.push(phone);
-          referrer.referralBonus += 200;
-          referrer.balance += 200;
-          localStorage.setItem('users', JSON.stringify(users));
-        }
-      }
-
-      alert("Registered successfully!");
-      window.location.href = "home.html"; // change to your actual home page
+      localStorage.setItem('user', JSON.stringify({ phone, pass }));
+      alert('Registered! Please login.');
     }
 
-    function loginUser() {
-      const phone = document.getElementById('loginPhone').value.trim();
-      const password = document.getElementById('loginPassword').value.trim();
-
-      const found = users.find(u => u.phone === phone && u.password === password);
-      if (!found) {
-        alert("Incorrect phone or password");
-        return;
-      }
-
-      localStorage.setItem('loggedInUser', phone);
-      alert("Login successful!");
-      window.location.href = "home.html"; // change to your actual home page
-    }
-
-    function recoverPassword() {
-      const phone = document.getElementById('forgotPhone').value.trim();
-      const user = users.find(u => u.phone === phone);
-      if (!user) {
-        alert("No account found with this phone.");
+    function login() {
+      const phone = document.getElementById('logPhone').value;
+      const pass = document.getElementById('logPass').value;
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (user.phone === phone && user.pass === pass) {
+        document.getElementById('auth').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        loadProducts();
       } else {
-        alert("Your password is: " + user.password);
+        alert('Wrong credentials!');
       }
+    }
+
+    function showTab(tab) {
+      document.querySelectorAll('.tabs > div').forEach(div => div.classList.remove('show'));
+      document.getElementById(tab).classList.add('show');
+    }
+
+    function loadProducts() {
+      const list = document.getElementById('productList');
+      list.innerHTML = '';
+      for (let i = 1; i <= 10; i++) {
+        const prod = document.createElement('div');
+        prod.className = 'product';
+        prod.innerHTML = `
+          <img src="https://source.unsplash.com/400x200/?oil,canister,${i}" />
+          <h3>Oil Product ${i}</h3>
+          <p>Daily Income: KES ${i * 10}</p>
+          <button onclick="invest(${i})">Invest</button>
+          <button id="collectBtn${i}" onclick="collect(${i})" disabled>Collect</button>
+        `;
+        list.appendChild(prod);
+      }
+    }
+
+    function invest(id) {
+      incomeTimers[id] = Date.now();
+      document.getElementById('collectBtn' + id).disabled = false;
+      alert(`Invested in Product ${id}. Come back in 24hrs to collect.`);
+    }
+
+    function collect(id) {
+      const lastTime = incomeTimers[id] || 0;
+      const now = Date.now();
+      if (now - lastTime >= 86400000) { // 24 hours
+        const income = id * 10;
+        balance += income;
+        document.getElementById('balance').innerText = `KES ${balance}`;
+        incomeTimers[id] = now;
+        alert(`Collected KES ${income} from Product ${id}`);
+      } else {
+        alert('24 hours not yet passed!');
+      }
+    }
+
+    function recharge() {
+      balance += 100;
+      document.getElementById('balance').innerText = `KES ${balance}`;
+      alert('Recharge successful!');
+    }
+
+    function withdraw() {
+      if (balance >= 100) {
+        balance -= 100;
+        document.getElementById('balance').innerText = `KES ${balance}`;
+        alert('Withdrawn KES 100');
+      } else {
+        alert('Insufficient balance');
+      }
+    }
+
+    function viewRecords() {
+      alert('Feature coming soon...');
     }
   </script>
 </body>
