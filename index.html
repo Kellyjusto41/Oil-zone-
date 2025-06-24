@@ -185,5 +185,20 @@
       document.getElementById("wallet-balance").innerText = `KES ${balance.toFixed(2)}`;
     }
   </script>
-</body>
+</body><!-- Registration Section -->
+<h3>Register</h3>
+<input type="text" id="regPhone" placeholder="Phone Number">
+<input type="password" id="regPassword" placeholder="Password">
+<button onclick="registerUser()">Register</button>
+
+<!-- Login Section -->
+<h3>Login</h3>
+<input type="text" id="loginPhone" placeholder="Phone Number">
+<input type="password" id="loginPassword" placeholder="Password">
+<button onclick="loginUser()">Login</button>
+
+<!-- Forgot Password -->
+<h3>Forgot Password</h3>
+<input type="text" id="forgotPhone" placeholder="Enter your phone">
+<button onclick="recoverPassword()">Forgot Password</button>
 </html>
