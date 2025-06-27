@@ -1,85 +1,37 @@
 
-const app = document.getElementById('app');
-const state = {
-  page: 'login',
-  users: JSON.parse(localStorage.getItem('users') || '{}'),
-  currentUser: localStorage.getItem('currentUser') || null,
-};
+let balance = 0;
+const investments = {};
 
-function saveUsers() {
-  localStorage.setItem('users', JSON.stringify(state.users));
+function createAccount() {
+  const phone = document.getElementById("phone").value.trim();
+  const pass = document.getElementById("password").value.trim();
+  const confirm = document.getElementById("confirm-password").value.trim();
+
+  if (!/^\+254\d{9}$/.test(phone)) return alert("Enter valid +254 phone number.");
+  if (!/^\d{6}$/.test(pass)) return alert("Password must be 6 digits.");
+  if (pass !== confirm) return alert("Passwords do not match.");
+
+  const existing = localStorage.getItem(phone);
+  if (existing) return alert("Account already exists. Please log in.");
+
+  localStorage.setItem(phone, pass);
+  alert("✅ Account created. You can now log in.");
 }
-function showLogin() {
-  state.page = 'login';
-  render();
+
+function login() {
+  const phone = document.getElementById("phone").value.trim();
+  const pass = document.getElementById("password").value.trim();
+
+  const saved = localStorage.getItem(phone);
+  if (!saved) return alert("No account found. Please register.");
+  if (saved !== pass) return alert("Incorrect password.");
+
+  document.getElementById("auth").classList.remove("active");
+  document.getElementById("navigation").style.display = "flex";
+  showSection("home");
 }
-function showRegister() {
-  state.page = 'register';
-  render();
+
+function showSection(id) {
+  document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
 }
-function login(phone, password) {
-  if (state.users[phone] && state.users[phone].password === password) {
-    state.currentUser = phone;
-    localStorage.setItem('currentUser', phone);
-    showHome();
-  } else {
-    alert('Wrong credentials');
-  }
-}
-function register(phone, password, confirmPassword, refCode) {
-  if (state.users[phone]) {
-    alert('This number is already registered. Please login.');
-    return;
-  }
-  if (password !== confirmPassword) {
-    alert('Passwords do not match');
-    return;
-  }
-  if (phone.length !== 10 || password.length !== 6) {
-    alert('Phone must be 10 digits and password 6 digits');
-    return;
-  }
-  state.users[phone] = { password, refCode };
-  saveUsers();
-  alert('Account created! Please login.');
-  showLogin();
-}
-function logout() {
-  localStorage.removeItem('currentUser');
-  state.currentUser = null;
-  showLogin();
-}
-function showHome() {
-  state.page = 'home';
-  render();
-}
-function render() {
-  if (!state.currentUser) {
-    app.innerHTML = state.page === 'register' ? `
-      <h2 style="text-align:center;">Create Account</h2>
-      <input type="text" placeholder="Phone (10 digits)" id="regPhone" />
-      <input type="password" placeholder="Password (6 digits)" id="regPass" />
-      <input type="password" placeholder="Confirm Password" id="regConfirm" />
-      <input type="text" placeholder="Referral Code (optional)" id="regRef" />
-      <button onclick="register(
-        regPhone.value, regPass.value, regConfirm.value, regRef.value)">Create Account</button>
-      <button onclick="showLogin()">Login</button>
-    ` : `
-      <h2 style="text-align:center;">Login</h2>
-      <input type="text" placeholder="Phone (10 digits)" id="loginPhone" />
-      <input type="password" placeholder="Password (6 digits)" id="loginPass" />
-      <button onclick="login(loginPhone.value, loginPass.value)">Login</button>
-      <button onclick="showRegister()">Create Account</button>
-    `;
-  } else {
-    app.innerHTML = `
-      <h2 style="text-align:center;">Welcome ${state.currentUser}</h2>
-      <div class="card"><strong>SHEEP RANCH (30 Days)</strong><br>Daily: KES 80.00<br>Price: KES 1,200.00</div>
-      <div class="card"><strong>GOATS RANCH (60 Days)</strong><br>Daily: KES 200.00<br>Price: KES 4,500.00</div>
-      <div class="card"><strong>HORSES RANCH (120 Days)</strong><br>Daily: KES 270.00<br>Price: KES 8,000.00</div>
-      <div class="card"><strong>PIGS RANCH (120 Days)</strong><br>Daily: KES 550.00<br>Price: KES 21,000.00</div>
-      <button onclick="logout()">Logout</button>
-    `;
-  }
-}
-render();

@@ -5,9 +5,33 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Oil Zone Investment</title>
-  <!-- Content truncated for brevity. Full content is included in the actual file. -->
+  <link rel="stylesheet" href="style.css">
+  <script defer src="script.js"></script>
 </head>
 <body>
-<!-- Complete content from user goes here -->
+  <header>
+    <h1>Oil Zone Investment</h1>
+  </header>
+  <section id="auth" class="active">
+    <h2>Register / Login</h2>
+    <input type="text" id="phone" placeholder="+254 Mobile Number" />
+    <input type="password" id="password" placeholder="Password (6 digits)" />
+    <input type="password" id="confirm-password" placeholder="Confirm Password" />
+    <input type="text" id="referral-code" placeholder="Referral Code (optional)" />
+    <button onclick="createAccount()">Create Account</button>
+    <button onclick="login()">Login</button>
+  </section>
+  <section id="home"><h2>Home</h2></section>
+  <section id="products"><h2>Products</h2></section>
+  <section id="wallet"><h2>Wallet</h2></section>
+  <section id="referral"><h2>Referral</h2></section>
+  <section id="contact"><h2>Contact</h2></section>
+  <nav id="navigation" style="display: none;">
+    <button onclick="showSection('home')">Home</button>
+    <button onclick="showSection('products')">Products</button>
+    <button onclick="showSection('wallet')">Wallet</button>
+    <button onclick="showSection('referral')">Referral</button>
+    <button onclick="showSection('contact')">Support</button>
+  </nav>
 </body>
 </html>
