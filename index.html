@@ -2,22 +2,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Oil Zone Investment</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <div class="logo">
-      <img src="https://i.imgur.com/VyAjf2Q.png" alt="Oil Zone Logo">
-    </div>
-    <h2>Oil Zone Investment</h2>
 
+  <div class="logo">
+    <img src="https://i.imgur.com/VyAjf2Q.png" alt="Oil Zone Logo" />
+  </div>
+
+  <div class="form-container">
     <input type="tel" id="phone" placeholder="+254 Mobile Number" maxlength="13">
     <div class="error" id="phoneError"></div>
 
-    <input type="password" id="password" placeholder="Password (6 digits)" maxlength="6">
+    <input type="password" id="password" placeholder="Password" maxlength="6">
     <div class="error" id="passError"></div>
 
     <input type="password" id="confirmPassword" placeholder="Confirm Password" maxlength="6">
@@ -27,20 +27,26 @@
 
     <button class="register-btn" onclick="register()">Create Account</button>
     <button class="login-btn" onclick="login()">Login</button>
+  </div>
 
-    <nav class="nav-bar">
-      <button onclick="showSection('home')">Home</button>
-      <button onclick="showSection('products')">Products</button>
-      <button onclick="showSection('wallet')">Wallet</button>
-      <button onclick="showSection('referral')">Referral</button>
-      <button onclick="showSection('support')">Support</button>
-    </nav>
+  <nav class="nav-bar">
+    <button onclick="navigate('home')">Home</button>
+    <button onclick="navigate('products')">Products</button>
+    <button onclick="navigate('wallet')">Wallet</button>
+    <button onclick="navigate('referral')">Referral</button>
+    <button onclick="navigate('support')">Support</button>
+  </nav>
 
-    <div id="home" class="section">Welcome to Oil Zone Investment.</div>
-    <div id="products" class="section" style="display:none;">Our product list will appear here.</div>
-    <div id="wallet" class="section" style="display:none;">Wallet details and options here.</div>
-    <div id="referral" class="section" style="display:none;">Refer and earn section.</div>
-    <div id="support" class="section" style="display:none;">Contact support here.</div>
+  <div id="content-section">
+    <h2>Products</h2>
+    <div id="products-container">
+      <div class="product-card">
+        <img src="https://i.imgur.com/qb6XbYv.jpg" alt="Oil Product" />
+        <h3>Oil Package A</h3>
+        <p>Earn Ksh 200 daily for 60 days</p>
+        <button>Invest</button>
+      </div>
+    </div>
   </div>
 
   <script src="script.js"></script>
