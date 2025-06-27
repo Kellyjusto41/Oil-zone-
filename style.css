@@ -1,33 +1,83 @@
 
 body {
-  font-family: Arial, sans-serif;
-  background: #f2f4f8;
-  color: #333;
-  padding-bottom: 80px;
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(to bottom right, #2b5876, #4e4376);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
 }
-header {
-  background: #002244;
-  color: #fff;
-  padding: 1rem;
+
+.container {
+  background: #ffffff;
+  color: #333;
+  padding: 30px 25px;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.2);
   text-align: center;
 }
-section {
-  padding: 1rem;
-  display: none;
+
+.logo img {
+  width: 80px;
+  margin-bottom: 10px;
 }
-section.active {
-  display: block;
-}
-input, button {
-  display: block;
+
+input {
   width: 100%;
+  padding: 12px;
   margin: 10px 0;
-  padding: 10px;
-  font-size: 1rem;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 16px;
 }
+
 button {
-  background-color: #4CAF50;
-  color: white;
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
   border: none;
-  border-radius: 5px;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.register-btn {
+  background: linear-gradient(to right, #00c6ff, #0072ff);
+  color: white;
+}
+
+.login-btn {
+  background: #4CAF50;
+  color: white;
+}
+
+.error {
+  color: red;
+  font-size: 13px;
+  margin-top: -8px;
+  margin-bottom: 8px;
+}
+
+.nav-bar {
+  margin-top: 20px;
+}
+
+.nav-bar button {
+  background: #0072ff;
+  color: white;
+  margin: 5px 2px;
+  width: auto;
+  padding: 10px 15px;
+  border-radius: 8px;
+}
+
+.section {
+  margin-top: 20px;
+  text-align: left;
 }

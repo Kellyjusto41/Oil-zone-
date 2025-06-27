@@ -2,36 +2,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Oil Zone Investment</title>
   <link rel="stylesheet" href="style.css">
-  <script defer src="script.js"></script>
 </head>
 <body>
-  <header>
-    <h1>Oil Zone Investment</h1>
-  </header>
-  <section id="auth" class="active">
-    <h2>Register / Login</h2>
-    <input type="text" id="phone" placeholder="+254 Mobile Number" />
-    <input type="password" id="password" placeholder="Password (6 digits)" />
-    <input type="password" id="confirm-password" placeholder="Confirm Password" />
-    <input type="text" id="referral-code" placeholder="Referral Code (optional)" />
-    <button onclick="createAccount()">Create Account</button>
-    <button onclick="login()">Login</button>
-  </section>
-  <section id="home"><h2>Home</h2></section>
-  <section id="products"><h2>Products</h2></section>
-  <section id="wallet"><h2>Wallet</h2></section>
-  <section id="referral"><h2>Referral</h2></section>
-  <section id="contact"><h2>Contact</h2></section>
-  <nav id="navigation" style="display: none;">
-    <button onclick="showSection('home')">Home</button>
-    <button onclick="showSection('products')">Products</button>
-    <button onclick="showSection('wallet')">Wallet</button>
-    <button onclick="showSection('referral')">Referral</button>
-    <button onclick="showSection('contact')">Support</button>
-  </nav>
+  <div class="container">
+    <div class="logo">
+      <img src="https://i.imgur.com/VyAjf2Q.png" alt="Oil Zone Logo">
+    </div>
+    <h2>Oil Zone Investment</h2>
+
+    <input type="tel" id="phone" placeholder="+254 Mobile Number" maxlength="13">
+    <div class="error" id="phoneError"></div>
+
+    <input type="password" id="password" placeholder="Password (6 digits)" maxlength="6">
+    <div class="error" id="passError"></div>
+
+    <input type="password" id="confirmPassword" placeholder="Confirm Password" maxlength="6">
+    <div class="error" id="confirmError"></div>
+
+    <input type="text" id="referral" placeholder="Referral Code (Optional)">
+
+    <button class="register-btn" onclick="register()">Create Account</button>
+    <button class="login-btn" onclick="login()">Login</button>
+
+    <nav class="nav-bar">
+      <button onclick="showSection('home')">Home</button>
+      <button onclick="showSection('products')">Products</button>
+      <button onclick="showSection('wallet')">Wallet</button>
+      <button onclick="showSection('referral')">Referral</button>
+      <button onclick="showSection('support')">Support</button>
+    </nav>
+
+    <div id="home" class="section">Welcome to Oil Zone Investment.</div>
+    <div id="products" class="section" style="display:none;">Our product list will appear here.</div>
+    <div id="wallet" class="section" style="display:none;">Wallet details and options here.</div>
+    <div id="referral" class="section" style="display:none;">Refer and earn section.</div>
+    <div id="support" class="section" style="display:none;">Contact support here.</div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>

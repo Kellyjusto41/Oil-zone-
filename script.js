@@ -1,37 +1,72 @@
 
-let balance = 0;
-const investments = {};
+function validatePhone(phone) {
+  return phone.length === 13 && phone.startsWith("+254");
+}
 
-function createAccount() {
-  const phone = document.getElementById("phone").value.trim();
-  const pass = document.getElementById("password").value.trim();
-  const confirm = document.getElementById("confirm-password").value.trim();
+function register() {
+  const phone = document.getElementById('phone').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const confirmPassword = document.getElementById('confirmPassword').value.trim();
 
-  if (!/^\+254\d{9}$/.test(phone)) return alert("Enter valid +254 phone number.");
-  if (!/^\d{6}$/.test(pass)) return alert("Password must be 6 digits.");
-  if (pass !== confirm) return alert("Passwords do not match.");
+  document.getElementById('phoneError').innerText = '';
+  document.getElementById('passError').innerText = '';
+  document.getElementById('confirmError').innerText = '';
 
-  const existing = localStorage.getItem(phone);
-  if (existing) return alert("Account already exists. Please log in.");
+  let valid = true;
 
-  localStorage.setItem(phone, pass);
-  alert("✅ Account created. You can now log in.");
+  if (!validatePhone(phone)) {
+    document.getElementById('phoneError').innerText = "Enter valid +254 phone number";
+    valid = false;
+  }
+
+  if (password.length !== 6) {
+    document.getElementById('passError').innerText = "Password must be 6 digits";
+    valid = false;
+  }
+
+  if (password !== confirmPassword) {
+    document.getElementById('confirmError').innerText = "Passwords do not match";
+    valid = false;
+  }
+
+  if (valid) {
+    localStorage.setItem("userPhone", phone);
+    localStorage.setItem("userPassword", password);
+    alert("Account Created Successfully!");
+  }
 }
 
 function login() {
-  const phone = document.getElementById("phone").value.trim();
-  const pass = document.getElementById("password").value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const password = document.getElementById('password').value.trim();
 
-  const saved = localStorage.getItem(phone);
-  if (!saved) return alert("No account found. Please register.");
-  if (saved !== pass) return alert("Incorrect password.");
+  const savedPhone = localStorage.getItem("userPhone");
+  const savedPassword = localStorage.getItem("userPassword");
 
-  document.getElementById("auth").classList.remove("active");
-  document.getElementById("navigation").style.display = "flex";
-  showSection("home");
+  if (!validatePhone(phone)) {
+    alert("Enter valid +254 phone number");
+    return;
+  }
+
+  if (password.length !== 6) {
+    alert("Password must be 6 digits");
+    return;
+  }
+
+  if (!savedPhone || !savedPassword) {
+    alert("Account not found. Please register first.");
+    return;
+  }
+
+  if (phone === savedPhone && password === savedPassword) {
+    alert("Login Successful! ✅");
+  } else {
+    alert("Incorrect phone or password.");
+  }
 }
 
-function showSection(id) {
-  document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
+function showSection(sectionId) {
+  const sections = document.querySelectorAll(".section");
+  sections.forEach(sec => sec.style.display = "none");
+  document.getElementById(sectionId).style.display = "block";
 }
