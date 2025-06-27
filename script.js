@@ -1,4 +1,3 @@
-
 function validatePhone(phone) {
   return phone.length === 13 && phone.startsWith("+254");
 }
@@ -60,11 +59,8 @@ function login() {
 
   if (phone === savedPhone && password === savedPassword) {
     alert("Login Successful! ✅");
+    // window.location.href = "home.html"; // Optional redirect
   } else {
     alert("Incorrect phone or password.");
   }
-}
-
-function navigate(section) {
-  alert("Navigation to " + section + " is clicked!");
 }
