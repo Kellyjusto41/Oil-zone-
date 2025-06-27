@@ -1,75 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Oil Zone Investment - Register/Login</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to bottom, #ff512f, #dd2476);
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-    }
-
-    .logo {
-      margin-top: 40px;
-    }
-
-    .logo img {
-      width: 120px;
-    }
-
-    .form-container {
-      background: #fff;
-      color: #000;
-      padding: 20px;
-      width: 90%;
-      max-width: 400px;
-      border-radius: 15px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      margin-top: 20px;
-    }
-
-    .form-container input {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-    }
-
-    .form-container button {
-      width: 100%;
-      padding: 12px;
-      font-size: 18px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 25px;
-      cursor: pointer;
-    }
-
-    .register-btn {
-      background: linear-gradient(to right, #00c6ff, #0072ff);
-      color: white;
-    }
-
-    .login-btn {
-      background-color: #4CAF50;
-      color: white;
-    }
-
-    .error {
-      color: red;
-      font-size: 14px;
-      margin-top: -5px;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
@@ -93,74 +28,6 @@
     <button class="login-btn" onclick="login()">Login</button>
   </div>
 
-  <script>
-    function validatePhone(phone) {
-      return phone.length === 13 && phone.startsWith("+254");
-    }
-
-    function register() {
-      const phone = document.getElementById('phone').value.trim();
-      const password = document.getElementById('password').value.trim();
-      const confirmPassword = document.getElementById('confirmPassword').value.trim();
-
-      document.getElementById('phoneError').innerText = '';
-      document.getElementById('passError').innerText = '';
-      document.getElementById('confirmError').innerText = '';
-
-      let valid = true;
-
-      if (!validatePhone(phone)) {
-        document.getElementById('phoneError').innerText = "Enter valid +254 phone number";
-        valid = false;
-      }
-
-      if (password.length !== 6) {
-        document.getElementById('passError').innerText = "Password must be 6 digits";
-        valid = false;
-      }
-
-      if (password !== confirmPassword) {
-        document.getElementById('confirmError').innerText = "Passwords do not match";
-        valid = false;
-      }
-
-      if (valid) {
-        localStorage.setItem("userPhone", phone);
-        localStorage.setItem("userPassword", password);
-        alert("Account Created Successfully!");
-      }
-    }
-
-    function login() {
-      const phone = document.getElementById('phone').value.trim();
-      const password = document.getElementById('password').value.trim();
-
-      const savedPhone = localStorage.getItem("userPhone");
-      const savedPassword = localStorage.getItem("userPassword");
-
-      if (!validatePhone(phone)) {
-        alert("Enter valid +254 phone number");
-        return;
-      }
-
-      if (password.length !== 6) {
-        alert("Password must be 6 digits");
-        return;
-      }
-
-      if (!savedPhone || !savedPassword) {
-        alert("Account not found. Please register first.");
-        return;
-      }
-
-      if (phone === savedPhone && password === savedPassword) {
-        alert("Login Successful! ✅");
-        // Redirect to home page here if needed
-      } else {
-        alert("Incorrect phone or password.");
-      }
-    }
-  </script>
-
+  <script src="script.js"></script>
 </body>
 </html>
