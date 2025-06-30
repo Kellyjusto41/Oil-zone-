@@ -1,166 +1,316 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Oil Zone Investment - Register/Login</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Oil Zone Investment</title>
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to bottom, #ff512f, #dd2476);
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(to bottom, #ff5e00, #ff9900);
       color: #fff;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-height: 100vh;
     }
 
-    .logo {
+    .login-container {
+      width: 90%;
+      max-width: 400px;
+      padding: 20px;
+      border-radius: 10px;
       margin-top: 40px;
     }
 
-    .logo img {
-      width: 120px;
-    }
-
-    .form-container {
-      background: #fff;
-      color: #000;
-      padding: 20px;
-      width: 90%;
-      max-width: 400px;
-      border-radius: 15px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      margin-top: 20px;
-    }
-
-    .form-container input {
+    input {
       width: 100%;
-      padding: 12px;
+      padding: 15px;
       margin: 10px 0;
-      border-radius: 8px;
-      border: 1px solid #ccc;
       font-size: 16px;
-    }
-
-    .form-container button {
-      width: 100%;
-      padding: 12px;
-      font-size: 18px;
-      margin: 10px 0;
+      border-radius: 12px;
       border: none;
-      border-radius: 25px;
-      cursor: pointer;
+      outline: none;
     }
 
-    .register-btn {
-      background: linear-gradient(to right, #00c6ff, #0072ff);
+    input::placeholder {
+      color: #aaa;
+    }
+
+    .create-btn {
+      background: linear-gradient(to right, #0099ff, #0066ff);
       color: white;
+      padding: 15px;
+      font-size: 16px;
+      width: 100%;
+      border-radius: 30px;
+      border: none;
+      margin: 15px 0;
     }
 
     .login-btn {
-      background-color: #4CAF50;
+      background: #4CAF50;
+      color: white;
+      padding: 15px;
+      font-size: 16px;
+      width: 100%;
+      border-radius: 30px;
+      border: none;
+    }
+
+    nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      background: #fff;
+      border-top: 1px solid #ccc;
+      color: #000;
+    }
+
+    nav button {
+      flex: 1;
+      padding: 1rem;
+      border: none;
+      background: none;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    section {
+      display: none;
+      padding: 1rem;
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+      background: white;
+      color: black;
+    }
+
+    section.active {
+      display: block;
+    }
+
+    .wallet-controls button,
+    .btn-invest,
+    .btn-collect {
+      margin: 0.5rem 0;
+      display: block;
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+    }
+
+    .btn-invest {
+      background: #28a745;
       color: white;
     }
 
-    .error {
-      color: red;
-      font-size: 14px;
-      margin-top: -5px;
+    .btn-collect {
+      background: #ccc;
+      color: white;
+    }
+
+    .btn-collect.ready {
+      background: #ff8800;
     }
   </style>
 </head>
 <body>
 
-  <div class="logo">
-    <img src="https://i.imgur.com/VyAjf2Q.png" alt="Oil Zone Logo">
-  </div>
-
-  <div class="form-container">
-    <input type="tel" id="phone" placeholder="+254 Mobile Number" maxlength="13">
-    <div class="error" id="phoneError"></div>
-
-    <input type="password" id="password" placeholder="Password" maxlength="6">
-    <div class="error" id="passError"></div>
-
-    <input type="password" id="confirmPassword" placeholder="Confirm Password" maxlength="6">
-    <div class="error" id="confirmError"></div>
-
-    <input type="text" id="referral" placeholder="Referral Code (Optional)">
-
-    <button class="register-btn" onclick="register()">Create Account</button>
+  <div class="login-container" id="auth">
+    <input type="text" placeholder="+254 Mobile Number" id="phone">
+    <input type="password" placeholder="Password" id="password">
+    <input type="password" placeholder="Confirm Password" id="confirmPassword">
+    <input type="text" placeholder="Referral Code (Optional)" id="referral">
+    <button class="create-btn" onclick="register()">Create Account</button>
     <button class="login-btn" onclick="login()">Login</button>
   </div>
 
+  <section id="home">
+    <h2>Welcome to Oil Zone Investment</h2>
+    <p>Invest smartly and earn profits daily for 60 days! Invite your friends and get rewards for every successful referral.</p>
+  </section>
+
+  <section id="products">
+    <h2>Investment Products</h2>
+    <div id="product-list"></div>
+  </section>
+
+  <section id="wallet">
+    <h2>Your Wallet</h2>
+    <p>Balance: <span id="wallet-balance">KES 0</span></p>
+    <div class="wallet-controls">
+      <button onclick="deposit()">Deposit</button>
+      <button onclick="withdraw()">Withdraw</button>
+    </div>
+  </section>
+
+  <section id="referral">
+    <h2>Invite & Earn</h2>
+    <p>Invite friends with your code. Earn bonus on each investment.</p>
+    <p>Your Referral Code: <strong>INVITE123</strong></p>
+  </section>
+
+  <section id="contact">
+    <h2>Contact Support</h2>
+    <p>Email: support@oilzone.com<br>WhatsApp: +254 700 000000</p>
+  </section>
+
+  <nav id="navigation" style="display: none;">
+    <button onclick="showSection('home')">Home</button>
+    <button onclick="showSection('products')">Products</button>
+    <button onclick="showSection('wallet')">Wallet</button>
+    <button onclick="showSection('referral')">Referral</button>
+    <button onclick="showSection('contact')">Support</button>
+  </nav>
+
   <script>
-    function validatePhone(phone) {
-      return phone.length === 13 && phone.startsWith("+254");
-    }
+    let balance = 0;
+    const investments = {};
 
     function register() {
-      const phone = document.getElementById('phone').value.trim();
-      const password = document.getElementById('password').value.trim();
-      const confirmPassword = document.getElementById('confirmPassword').value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const pass = document.getElementById("password").value.trim();
+      const confirm = document.getElementById("confirmPassword").value.trim();
 
-      document.getElementById('phoneError').innerText = '';
-      document.getElementById('passError').innerText = '';
-      document.getElementById('confirmError').innerText = '';
+      if (!/^\+?254\d{9}$/.test(phone)) return alert("Enter valid +254 phone number");
+      if (pass.length < 6) return alert("Password must be at least 6 characters");
+      if (pass !== confirm) return alert("Passwords do not match");
 
-      let valid = true;
-
-      if (!validatePhone(phone)) {
-        document.getElementById('phoneError').innerText = "Enter valid +254 phone number";
-        valid = false;
-      }
-
-      if (password.length !== 6) {
-        document.getElementById('passError').innerText = "Password must be 6 digits";
-        valid = false;
-      }
-
-      if (password !== confirmPassword) {
-        document.getElementById('confirmError').innerText = "Passwords do not match";
-        valid = false;
-      }
-
-      if (valid) {
-        localStorage.setItem("userPhone", phone);
-        localStorage.setItem("userPassword", password);
-        alert("Account Created Successfully!");
-      }
+      localStorage.setItem(`user-${phone}`, JSON.stringify({ phone, pass, balance: 0 }));
+      alert("Account created successfully!");
     }
 
     function login() {
-      const phone = document.getElementById('phone').value.trim();
-      const password = document.getElementById('password').value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const pass = document.getElementById("password").value.trim();
+      const stored = localStorage.getItem(`user-${phone}`);
 
-      const savedPhone = localStorage.getItem("userPhone");
-      const savedPassword = localStorage.getItem("userPassword");
+      if (!stored) return alert("No account found. Please register.");
+      const data = JSON.parse(stored);
 
-      if (!validatePhone(phone)) {
-        alert("Enter valid +254 phone number");
-        return;
-      }
+      if (data.pass !== pass) return alert("Incorrect password");
+      balance = data.balance;
 
-      if (password.length !== 6) {
-        alert("Password must be 6 digits");
-        return;
-      }
+      document.getElementById("auth").style.display = "none";
+      document.getElementById("navigation").style.display = "flex";
+      showSection("home");
+      updateWallet();
+      generateProducts();
+    }
 
-      if (!savedPhone || !savedPassword) {
-        alert("Account not found. Please register first.");
-        return;
-      }
+    function updateWallet() {
+      document.getElementById("wallet-balance").innerText = `KES ${balance.toFixed(2)}`;
+    }
 
-      if (phone === savedPhone && password === savedPassword) {
-        alert("Login Successful! ✅");
-        // Redirect to home page here if needed
-      } else {
-        alert("Incorrect phone or password.");
+    function showSection(id) {
+      document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+    }
+
+    function generateProducts() {
+      const list = document.getElementById("product-list");
+      list.innerHTML = "";
+      for (let i = 1; i <= 10; i++) {
+        const id = `product-${i}`;
+        const amount = i * 100;
+        const daily = amount * 0.1;
+        const total = daily * 60;
+        if (!investments[id]) {
+          investments[id] = { totalInvested: 0, history: [] };
+        }
+
+        const div = document.createElement("div");
+        div.className = "product";
+        div.innerHTML = `
+          <h3>Oil Product ${i}</h3>
+          <p>Invest: KES ${amount}</p>
+          <p>Daily Return: KES ${daily.toFixed(2)}</p>
+          <p>Total After 60 Days: KES ${total.toFixed(2)}</p>
+          <p>📌 Send this amount to <strong>0704939140</strong></p>
+          <button class="btn-invest" onclick="invest('${id}', ${amount})">Invest</button>
+          <button id="btn-${id}" class="btn-collect" onclick="collect('${id}')">Collect Income</button>
+          <p>Total Invested: KES <span id="total-${id}">${investments[id].totalInvested}</span></p>
+        `;
+        list.appendChild(div);
+        updateCollectButton(id);
       }
     }
-  </script>
 
+    function invest(id, amount) {
+      if (balance < amount) return alert("Insufficient balance. Please deposit first.");
+      balance -= amount;
+      investments[id].totalInvested += amount;
+      investments[id].history.push({ amount, lastCollected: new Date(), daysCollected: 0 });
+      updateWallet();
+      alert(`Invested KES ${amount} in ${id}`);
+      document.getElementById(`total-${id}`).innerText = investments[id].totalInvested;
+      updateCollectButton(id);
+    }
+
+    function collect(id) {
+      const product = investments[id];
+      if (!product || product.history.length === 0) return alert("No investment yet.");
+      let collected = false;
+      const now = new Date();
+      product.history.forEach(inv => {
+        const hours = (now - new Date(inv.lastCollected)) / (1000 * 60 * 60);
+        if (hours >= 24 && inv.daysCollected < 60) {
+          const income = inv.amount * 0.1;
+          balance += income;
+          inv.lastCollected = now;
+          inv.daysCollected++;
+          collected = true;
+        }
+      });
+      if (collected) {
+        updateWallet();
+        alert("Daily income collected.");
+      } else {
+        alert("Come back after 24 hours.");
+      }
+      updateCollectButton(id);
+    }
+
+    function updateCollectButton(id) {
+      const product = investments[id];
+      const btn = document.getElementById(`btn-${id}`);
+      const now = new Date();
+      let ready = false;
+      for (const inv of product.history) {
+        const hours = (now - new Date(inv.lastCollected)) / (1000 * 60 * 60);
+        if (hours >= 24 && inv.daysCollected < 60) {
+          ready = true;
+          break;
+        }
+      }
+      btn.className = "btn-collect" + (ready ? " ready" : "");
+      btn.innerText = ready ? "Collect Income (Ready)" : "Collect Income";
+    }
+
+    function deposit() {
+      const amount = prompt("Enter amount you want to deposit:");
+      if (!amount || isNaN(amount)) return alert("Enter a valid amount.");
+      alert(`📌 Please send KES ${amount} to 0704939140 via M-PESA. Then click OK.`);
+      balance += parseFloat(amount);
+      updateWallet();
+    }
+
+    function withdraw() {
+      const phone = prompt("Enter number to withdraw to:");
+      const amount = prompt("Enter amount to withdraw:");
+      if (!/^\d{10}$/.test(phone)) return alert("Phone must be 10 digits.");
+      if (!amount || isNaN(amount)) return alert("Enter valid amount.");
+      if (parseFloat(amount) > balance) return alert("Insufficient balance.");
+      balance -= parseFloat(amount);
+      updateWallet();
+      alert(`Withdrawn KES ${amount} to ${phone}`);
+    }
+  </script>
 </body>
 </html>
