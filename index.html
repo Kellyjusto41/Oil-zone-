@@ -218,8 +218,8 @@
       list.innerHTML = "";
       for (let i = 1; i <= 10; i++) {
         const id = `product-${i}`;
-        const amount = i * 100;
-        const daily = amount * 0.1;
+        const amount = i * 1000;
+        const daily = amount * 0.2;
         const total = daily * 60;
         if (!investments[id]) {
           investments[id] = { totalInvested: 0, history: [] };
