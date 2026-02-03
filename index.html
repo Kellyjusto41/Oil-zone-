@@ -5,114 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Oil Zone Investment</title>
 
+<!-- Parse JS CDN for browser -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/parse/3.4.4/parse.min.js"></script>
 <script>
-Parse.initialize(
-  "eP6iUjmtNrg7SEqtwBkaNLUxtuGEHGk1TYBRz2Ck",
-  "7v1nDUEFTO6WcYFRwjXncGJZOMbahhuLE9KKFMw3"
-);
-Parse.serverURL = "https://parseapi.back4app.com/";
+  // Initialize Parse
+  Parse.initialize(
+    "eP6iUjmtNrg7SEqtwBkaNLUxtuGEHGk1TYBRz2Ck",
+    "7v1nDUEFTO6WcYFRwjXncGJZOMbahhuLE9KKFMw3"
+  );
+  Parse.serverURL = "https://parseapi.back4app.com/";
 </script>
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{
-  font-family:Arial,sans-serif;
-  background:linear-gradient(135deg,#0f9b8e,#38ef7d);
-  min-height:100vh;
-}
-.container{
-  max-width:420px;
-  margin:30px auto;
-  background:#fff;
-  border-radius:15px;
-  padding:20px;
-}
-input,button{
-  width:100%;
-  padding:14px;
-  margin:8px 0;
-  border-radius:25px;
-  border:1px solid #ccc;
-}
-button{
-  border:none;
-  background:linear-gradient(to right,#2196f3,#0d47a1);
-  color:#fff;
-  font-size:16px;
-}
-.alt{
-  background:linear-gradient(to right,#ff9800,#ff5722);
-}
-.section{display:none}
-.section.active{display:block}
-
-/* AUTH TEXT */
-.switch{
-  text-align:center;
-  margin-top:10px;
-  font-size:14px;
-}
-.switch span{
-  color:#0d47a1;
-  cursor:pointer;
-  font-weight:bold;
-}
-
-/* SLIDER */
-.slider{
-  position:relative;
-  height:220px;
-  overflow:hidden;
-  border-radius:15px;
-}
-.slide{
-  position:absolute;
-  width:100%;
-  height:100%;
-  opacity:0;
-  transition:opacity 1s ease-in-out;
-}
+body{font-family:Arial,sans-serif;background:linear-gradient(135deg,#0f9b8e,#38ef7d);min-height:100vh}
+.container{max-width:420px;margin:30px auto;background:#fff;border-radius:15px;padding:20px}
+input,button{width:100%;padding:14px;margin:8px 0;border-radius:25px;border:1px solid #ccc}
+button{border:none;background:linear-gradient(to right,#2196f3,#0d47a1);color:#fff;font-size:16px}
+.alt{background:linear-gradient(to right,#ff9800,#ff5722)}
+.section{display:none}.section.active{display:block}
+.switch{text-align:center;margin-top:10px;font-size:14px}
+.switch span{color:#0d47a1;cursor:pointer;font-weight:bold}
+.slider{position:relative;height:220px;overflow:hidden;border-radius:15px}
+.slide{position:absolute;width:100%;height:100%;opacity:0;transition:opacity 1s ease-in-out}
 .slide.active{opacity:1}
-.slide img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
-.overlay{
-  position:absolute;
-  inset:0;
-  background:rgba(0,0,0,0.45);
-  color:#fff;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-}
-
-/* PRODUCTS */
-.product{
-  border:1px solid #ddd;
-  padding:15px;
-  margin:10px 0;
-  border-radius:12px;
-}
-
-/* NAV */
-nav{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  display:none;
-  background:#fff;
-  border-top:1px solid #ccc;
-}
-nav button{
-  flex:1;
-  background:none;
-  color:#000;
-}
+.slide img{width:100%;height:100%;object-fit:cover}
+.overlay{position:absolute;inset:0;background:rgba(0,0,0,0.45);color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center}
+.product{border:1px solid #ddd;padding:15px;margin:10px 0;border-radius:12px}
+nav{position:fixed;bottom:0;left:0;right:0;display:none;background:#fff;border-top:1px solid #ccc}
+nav button{flex:1;background:none;color:#000}
 </style>
 </head>
 
@@ -121,14 +42,11 @@ nav button{
 <!-- AUTH -->
 <div class="container" id="auth">
   <h2 id="authTitle">Login</h2>
-
   <input id="phone" placeholder="+2547XXXXXXXX">
   <input id="password" type="password" placeholder="Password">
   <input id="confirm" type="password" placeholder="Confirm Password" style="display:none">
-
   <button id="loginBtn" onclick="login()">Login</button>
   <button id="registerBtn" class="alt" onclick="register()" style="display:none">Create Account</button>
-
   <div class="switch">
     <span id="switchText" onclick="switchAuth()">Don’t have an account? Register</span>
   </div>
@@ -209,23 +127,29 @@ document.addEventListener("DOMContentLoaded", async()=>{
 });
 
 /* REGISTER */
-async function register(){
-  if(password.value!==confirm.value) return alert("Passwords do not match");
-  const user=new Parse.User();
-  user.set("username",phone.value.trim());
-  user.set("password",password.value.trim());
-  user.set("referralCode","OZ"+Math.floor(Math.random()*100000));
-  try{
+async function register() {
+  if (password.value !== confirm.value) return alert("Passwords do not match");
+
+  const user = new Parse.User();
+  const cleanPhone = phone.value.trim().replace(/\+/g, "");
+  user.set("username", cleanPhone);
+  user.set("password", password.value.trim());
+  user.set("phone", phone.value.trim());
+  user.set("referralCode", "OZ" + Math.floor(Math.random() * 100000));
+
+  try {
     await user.signUp();
     alert("Account created. Login now.");
     switchAuth();
-  }catch(e){alert(e.message)}
+  } catch (e) {
+    alert("Registration failed: " + e.message);
+  }
 }
 
 /* LOGIN */
 async function login(){
   try{
-    await Parse.User.logIn(phone.value,password.value);
+    await Parse.User.logIn(phone.value.replace(/\+/g,""),password.value);
     auth.style.display="none";
     nav.style.display="flex";
     await loadWallet();
@@ -267,7 +191,7 @@ function generateProducts(){
   }
 }
 
-/* INVEST / COLLECT / DEMO WALLET */
+/* INVEST / COLLECT */
 async function invest(pid,amt){
   if(walletObj.get("balance")<amt) return alert("Insufficient");
   walletObj.increment("balance",-amt);
@@ -283,19 +207,14 @@ async function deposit() {
   const amount = parseInt(prompt("Enter amount"));
   if (!amount || amount < 1) return alert("Invalid amount");
 
-  const phone = Parse.User.current().get("username"); 
-  // assumes phone is username e.g. 2547XXXXXXXX
-
+  const phoneNum = Parse.User.current().get("username"); // cleaned username without +
   try {
     const result = await Parse.Cloud.run("stkPush", {
-      phone: phone,
+      phone: phoneNum,
       amount: amount
     });
-
     alert("STK Push sent. Enter your M-PESA PIN.");
-
     console.log("STK Response:", result);
-
   } catch (error) {
     alert("Payment failed: " + error.message);
   }
