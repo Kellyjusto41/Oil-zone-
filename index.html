@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Oil Zone Investment</title>
 
+<!-- Parse JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/parse/3.4.4/parse.min.js"></script>
 <script>
   Parse.initialize(
@@ -47,7 +48,7 @@ nav button{flex:1;background:none;color:#000}
   <input id="confirm" type="password" placeholder="Confirm Password" style="display:none">
 
   <button id="loginBtn" onclick="login()">Login</button>
-  <button id="registerBtn" class="alt" onclick="register()" style="display:none">Create Account</button>
+  <button id="registerBtn" class="alt" onclick="register()" style="display:none">Register</button>
 
   <div class="switch">
     <span id="switchText" onclick="switchAuth()">Don’t have an account? Register</span>
@@ -130,32 +131,42 @@ document.addEventListener("DOMContentLoaded", async()=>{
 
 /* REGISTER */
 async function register(){
-  if(password.value!==confirm.value) return alert("Passwords do not match");
-  const user=new Parse.User();
-  const phoneNum = phone.value.trim().replace(/\D/g,''); // numeric
+  const phoneNum = phone.value.trim().replace(/\D/g,'');
+  const pw = password.value.trim();
+  const confirmPw = confirm.value.trim();
+  if(!phoneNum || !pw || !confirmPw) return alert("All fields required");
+  if(pw !== confirmPw) return alert("Passwords do not match");
+
+  const user = new Parse.User();
   user.set("username", phoneNum);
-  user.set("password",password.value.trim());
+  user.set("password", pw);
   user.set("phone", phone.value.trim());
-  user.set("referralCode","OZ"+Math.floor(Math.random()*100000));
+  user.set("referralCode", "OZ" + Math.floor(Math.random()*100000));
   user.set("invited", false); // default not invited
   try{
     await user.signUp();
     alert("Account created. Login now.");
     switchAuth();
-  }catch(e){alert(e.message)}
+  }catch(e){
+    alert(e.message);
+  }
 }
 
 /* LOGIN */
 async function login(){
+  const phoneNum = phone.value.trim().replace(/\D/g,'');
+  const pw = password.value.trim();
+  if(!phoneNum || !pw) return alert("Enter phone and password");
   try{
-    const phoneNum = phone.value.trim().replace(/\D/g,''); // numeric
-    await Parse.User.logIn(phoneNum,password.value.trim());
+    await Parse.User.logIn(phoneNum, pw);
     auth.style.display="none";
     nav.style.display="flex";
     await loadWallet();
     generateProducts();
     show("home");
-  }catch(e){alert(e.message)}
+  }catch(e){
+    alert(e.message);
+  }
 }
 
 /* LOGOUT */
@@ -166,18 +177,18 @@ async function logout(){
 
 /* WALLET */
 async function loadWallet(){
-  const Wallet=Parse.Object.extend("Wallet");
-  const q=new Parse.Query(Wallet);
-  q.equalTo("user",Parse.User.current());
-  walletObj=await q.first();
+  const Wallet = Parse.Object.extend("Wallet");
+  const q = new Parse.Query(Wallet);
+  q.equalTo("user", Parse.User.current());
+  walletObj = await q.first();
   if(!walletObj){
-    walletObj=new Wallet();
-    walletObj.set("user",Parse.User.current());
-    walletObj.set("balance",0);
+    walletObj = new Wallet();
+    walletObj.set("user", Parse.User.current());
+    walletObj.set("balance", 0);
     await walletObj.save();
   }
-  balance.innerText="KES "+walletObj.get("balance");
-  refCode.innerText=Parse.User.current().get("referralCode");
+  balance.innerText = "KES " + walletObj.get("balance");
+  refCode.innerText = Parse.User.current().get("referralCode");
 }
 
 /* PRODUCTS */
