@@ -5,10 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Oil Zone Investment</title>
 
-<!-- Parse JS CDN for browser -->
+<!-- Parse JS CDN for GitHub Pages -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/parse/3.4.4/parse.min.js"></script>
 <script>
-  // Initialize Parse
   Parse.initialize(
     "eP6iUjmtNrg7SEqtwBkaNLUxtuGEHGk1TYBRz2Ck",
     "7v1nDUEFTO6WcYFRwjXncGJZOMbahhuLE9KKFMw3"
@@ -41,15 +40,10 @@ nav button{flex:1;background:none;color:#000}
 
 <!-- AUTH -->
 <div class="container" id="auth">
-  <h2 id="authTitle">Login</h2>
+  <h2 id="authTitle">Login / Register</h2>
   <input id="phone" placeholder="+2547XXXXXXXX">
   <input id="password" type="password" placeholder="Password">
-  <input id="confirm" type="password" placeholder="Confirm Password" style="display:none">
-  <button id="loginBtn" onclick="login()">Login</button>
-  <button id="registerBtn" class="alt" onclick="register()" style="display:none">Create Account</button>
-  <div class="switch">
-    <span id="switchText" onclick="switchAuth()">Don’t have an account? Register</span>
-  </div>
+  <button id="loginBtn" onclick="loginOrRegister()">Login / Register</button>
 </div>
 
 <!-- HOME -->
@@ -95,19 +89,6 @@ nav button{flex:1;background:none;color:#000}
 
 <script>
 let walletObj;
-let isRegister=false;
-
-/* AUTH SWITCH */
-function switchAuth(){
-  isRegister=!isRegister;
-  authTitle.innerText=isRegister?"Register":"Login";
-  confirm.style.display=isRegister?"block":"none";
-  loginBtn.style.display=isRegister?"none":"block";
-  registerBtn.style.display=isRegister?"block":"none";
-  switchText.innerText=isRegister
-    ?"Already have an account? Login"
-    :"Don’t have an account? Register";
-}
 
 /* SECTION */
 function show(id){
@@ -126,36 +107,48 @@ document.addEventListener("DOMContentLoaded", async()=>{
   }
 });
 
-/* REGISTER */
-async function register() {
-  if (password.value !== confirm.value) return alert("Passwords do not match");
+/* SMART LOGIN / REGISTER */
+async function loginOrRegister() {
+  const phoneRaw = phone.value.trim();
+  const passwordRaw = password.value.trim();
+  if (!phoneRaw || !passwordRaw) return alert("Enter phone and password");
 
-  const user = new Parse.User();
-  const cleanPhone = phone.value.trim().replace(/\+/g, "");
-  user.set("username", cleanPhone);
-  user.set("password", password.value.trim());
-  user.set("phone", phone.value.trim());
-  user.set("referralCode", "OZ" + Math.floor(Math.random() * 100000));
+  const username = phoneRaw.replace(/\D/g,""); // numeric username
 
   try {
-    await user.signUp();
-    alert("Account created. Login now.");
-    switchAuth();
-  } catch (e) {
-    alert("Registration failed: " + e.message);
-  }
-}
-
-/* LOGIN */
-async function login(){
-  try{
-    await Parse.User.logIn(phone.value.replace(/\+/g,""),password.value);
+    // Try login
+    await Parse.User.logIn(username, passwordRaw);
     auth.style.display="none";
     nav.style.display="flex";
     await loadWallet();
     generateProducts();
     show("home");
-  }catch(e){alert(e.message)}
+    alert("Logged in successfully!");
+  } catch (e) {
+    if(e.code === 101){ 
+      // User not found → auto-register
+      const user = new Parse.User();
+      user.set("username", username);
+      user.set("password", passwordRaw);
+      user.set("phone", phoneRaw);
+      user.set("referralCode", "OZ" + Math.floor(Math.random()*100000));
+      try {
+        await user.signUp();
+        // Login after registration
+        await Parse.User.logIn(username, passwordRaw);
+        auth.style.display="none";
+        nav.style.display="flex";
+        await loadWallet();
+        generateProducts();
+        show("home");
+        alert("Account created and logged in!");
+      } catch (err){
+        alert("Registration failed: " + err.message);
+      }
+    } else {
+      alert("Login failed: " + e.message);
+    }
+  }
 }
 
 /* LOGOUT */
@@ -166,10 +159,16 @@ async function logout(){
 
 /* WALLET */
 async function loadWallet(){
-  const Wallet=Parse.Object.extend("Wallet");
-  const q=new Parse.Query(Wallet);
-  q.equalTo("user",Parse.User.current());
-  walletObj=await q.first();
+  const Wallet = Parse.Object.extend("Wallet");
+  const q = new Parse.Query(Wallet);
+  q.equalTo("user", Parse.User.current());
+  walletObj = await q.first();
+  if(!walletObj){
+    walletObj = new Wallet();
+    walletObj.set("user", Parse.User.current());
+    walletObj.set("balance", 0);
+    await walletObj.save();
+  }
   balance.innerText="KES "+walletObj.get("balance");
   refCode.innerText=Parse.User.current().get("referralCode");
 }
@@ -207,7 +206,7 @@ async function deposit() {
   const amount = parseInt(prompt("Enter amount"));
   if (!amount || amount < 1) return alert("Invalid amount");
 
-  const phoneNum = Parse.User.current().get("username"); // cleaned username without +
+  let phoneNum = Parse.User.current().get("username"); // numeric
   try {
     const result = await Parse.Cloud.run("stkPush", {
       phone: phoneNum,
@@ -217,6 +216,7 @@ async function deposit() {
     console.log("STK Response:", result);
   } catch (error) {
     alert("Payment failed: " + error.message);
+    console.error(error);
   }
 }
 
