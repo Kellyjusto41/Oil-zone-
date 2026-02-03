@@ -277,13 +277,31 @@ async function invest(pid,amt){
 function updateBalance(){
   balance.innerText="KES "+walletObj.get("balance");
 }
-async function deposit(){
-  const amt=parseFloat(prompt("Amount"));
-  if(!amt) return;
-  walletObj.increment("balance",amt);
-  await walletObj.save();
-  updateBalance();
+
+/* DEPOSIT (STK PUSH) */
+async function deposit() {
+  const amount = parseInt(prompt("Enter amount"));
+  if (!amount || amount < 1) return alert("Invalid amount");
+
+  const phone = Parse.User.current().get("username"); 
+  // assumes phone is username e.g. 2547XXXXXXXX
+
+  try {
+    const result = await Parse.Cloud.run("stkPush", {
+      phone: phone,
+      amount: amount
+    });
+
+    alert("STK Push sent. Enter your M-PESA PIN.");
+
+    console.log("STK Response:", result);
+
+  } catch (error) {
+    alert("Payment failed: " + error.message);
+  }
 }
+
+/* WITHDRAW */
 async function withdraw(){
   const amt=parseFloat(prompt("Amount"));
   if(amt>walletObj.get("balance")) return alert("Insufficient");
