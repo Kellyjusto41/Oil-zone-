@@ -7,7 +7,10 @@
 
 <script src="https://npmcdn.com/parse/dist/parse.min.js"></script>
 <script>
-Parse.initialize("eP6iUjmtNrg7SEqtwBkaNLUxtuGEHGk1TYBRz2Ck", "7v1nDUEFTO6WcYFRwjXncGJZOMbahhuLE9KKFMw3");
+Parse.initialize(
+  "eP6iUjmtNrg7SEqtwBkaNLUxtuGEHGk1TYBRz2Ck",
+  "7v1nDUEFTO6WcYFRwjXncGJZOMbahhuLE9KKFMw3"
+);
 Parse.serverURL = "https://parseapi.back4app.com/";
 </script>
 
@@ -41,15 +44,61 @@ button{
 .alt{
   background:linear-gradient(to right,#ff9800,#ff5722);
 }
-section{display:none}
-section.active{display:block}
+.section{display:none}
+.section.active{display:block}
+
+/* AUTH TEXT */
+.switch{
+  text-align:center;
+  margin-top:10px;
+  font-size:14px;
+}
+.switch span{
+  color:#0d47a1;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+/* SLIDER */
+.slider{
+  position:relative;
+  height:220px;
+  overflow:hidden;
+  border-radius:15px;
+}
+.slide{
+  position:absolute;
+  width:100%;
+  height:100%;
+  opacity:0;
+  transition:opacity 1s ease-in-out;
+}
+.slide.active{opacity:1}
+.slide img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.overlay{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.45);
+  color:#fff;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+}
+
+/* PRODUCTS */
 .product{
   border:1px solid #ddd;
   padding:15px;
   margin:10px 0;
   border-radius:12px;
 }
-.collect.ready{background:#ff9800}
+
+/* NAV */
 nav{
   position:fixed;
   bottom:0;
@@ -69,25 +118,41 @@ nav button{
 
 <body>
 
+<!-- AUTH -->
 <div class="container" id="auth">
-  <h2>Oil Zone Investment</h2>
+  <h2 id="authTitle">Login</h2>
+
   <input id="phone" placeholder="+2547XXXXXXXX">
   <input id="password" type="password" placeholder="Password">
-  <input id="confirm" type="password" placeholder="Confirm Password">
-  <button class="alt" onclick="register()">Create Account</button>
-  <button onclick="login()">Login</button>
+  <input id="confirm" type="password" placeholder="Confirm Password" style="display:none">
+
+  <button id="loginBtn" onclick="login()">Login</button>
+  <button id="registerBtn" class="alt" onclick="register()" style="display:none">Create Account</button>
+
+  <div class="switch">
+    <span id="switchText" onclick="switchAuth()">Don’t have an account? Register</span>
+  </div>
 </div>
 
+<!-- HOME -->
 <div class="container section" id="home">
-  <h3>Welcome</h3>
-  <p>Earn daily for 60 days</p>
+  <div class="slider">
+    <div class="slide active"><img src="oil1.png"></div>
+    <div class="slide"><img src="oil2.png"></div>
+    <div class="overlay">
+      <h2>Invest Smart</h2>
+      <p>Earn Daily</p>
+    </div>
+  </div>
 </div>
 
+<!-- PRODUCTS -->
 <div class="container section" id="products">
   <h3>Products</h3>
   <div id="productList"></div>
 </div>
 
+<!-- WALLET -->
 <div class="container section" id="wallet">
   <h3>Wallet</h3>
   <p>Balance: <b id="balance">KES 0</b></p>
@@ -95,53 +160,87 @@ nav button{
   <button onclick="withdraw()">Withdraw</button>
 </div>
 
+<!-- REFERRAL -->
 <div class="container section" id="referral">
   <h3>Referral</h3>
   <p>Your Code: <b id="refCode"></b></p>
 </div>
 
+<!-- NAV -->
 <nav id="nav">
   <button onclick="show('home')">Home</button>
   <button onclick="show('products')">Products</button>
   <button onclick="show('wallet')">Wallet</button>
   <button onclick="show('referral')">Referral</button>
+  <button onclick="logout()">Logout</button>
 </nav>
 
 <script>
 let walletObj;
+let isRegister=false;
 
+/* AUTH SWITCH */
+function switchAuth(){
+  isRegister=!isRegister;
+  authTitle.innerText=isRegister?"Register":"Login";
+  confirm.style.display=isRegister?"block":"none";
+  loginBtn.style.display=isRegister?"none":"block";
+  registerBtn.style.display=isRegister?"block":"none";
+  switchText.innerText=isRegister
+    ?"Already have an account? Login"
+    :"Don’t have an account? Register";
+}
+
+/* SECTION */
 function show(id){
   document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
 }
 
+/* AUTO LOGIN */
+document.addEventListener("DOMContentLoaded", async()=>{
+  if(Parse.User.current()){
+    auth.style.display="none";
+    nav.style.display="flex";
+    await loadWallet();
+    generateProducts();
+    show("home");
+  }
+});
+
+/* REGISTER */
 async function register(){
+  if(password.value!==confirm.value) return alert("Passwords do not match");
   const user=new Parse.User();
   user.set("username",phone.value.trim());
   user.set("password",password.value.trim());
   user.set("referralCode","OZ"+Math.floor(Math.random()*100000));
   try{
     await user.signUp();
-    const Wallet=Parse.Object.extend("Wallet");
-    walletObj=new Wallet();
-    walletObj.set("user",user);
-    walletObj.set("balance",0);
-    await walletObj.save();
-    alert("Account created");
+    alert("Account created. Login now.");
+    switchAuth();
   }catch(e){alert(e.message)}
 }
 
+/* LOGIN */
 async function login(){
   try{
     await Parse.User.logIn(phone.value,password.value);
     auth.style.display="none";
     nav.style.display="flex";
-    loadWallet();
-    show("home");
+    await loadWallet();
     generateProducts();
+    show("home");
   }catch(e){alert(e.message)}
 }
 
+/* LOGOUT */
+async function logout(){
+  await Parse.User.logOut();
+  location.reload();
+}
+
+/* WALLET */
 async function loadWallet(){
   const Wallet=Parse.Object.extend("Wallet");
   const q=new Parse.Query(Wallet);
@@ -151,80 +250,57 @@ async function loadWallet(){
   refCode.innerText=Parse.User.current().get("referralCode");
 }
 
+/* PRODUCTS */
 function generateProducts(){
   productList.innerHTML="";
   for(let i=1;i<=6;i++){
-    const amount=i*1000;
-    const daily=amount*0.1;
+    const amt=i*1000;
+    const daily=amt*0.1;
     productList.innerHTML+=`
       <div class="product">
         <b>Oil Product ${i}</b>
-        <p>Invest: KES ${amount}</p>
+        <p>Invest: KES ${amt}</p>
         <p>Daily: KES ${daily}</p>
-        <button onclick="invest('${i}',${amount})">Invest</button>
-        <button class="collect" id="c${i}" onclick="collect('${i}',${daily})">Collect</button>
+        <button onclick="invest('${i}',${amt})">Invest</button>
+        <button onclick="collect('${i}',${daily})">Collect</button>
       </div>`;
   }
 }
 
-async function invest(pid,amount){
-  if(walletObj.get("balance")<amount) return alert("Insufficient balance");
-  walletObj.increment("balance",-amount);
+/* INVEST / COLLECT / DEMO WALLET */
+async function invest(pid,amt){
+  if(walletObj.get("balance")<amt) return alert("Insufficient");
+  walletObj.increment("balance",-amt);
   await walletObj.save();
-  const Inv=Parse.Object.extend("Investment");
-  const inv=new Inv();
-  inv.set("user",Parse.User.current());
-  inv.set("productId",pid);
-  inv.set("amount",amount);
-  inv.set("daysCollected",0);
-  inv.set("lastCollected",new Date());
-  await inv.save();
   updateBalance();
 }
-
-async function collect(pid,daily){
-  const Inv=Parse.Object.extend("Investment");
-  const q=new Parse.Query(Inv);
-  q.equalTo("user",Parse.User.current());
-  q.equalTo("productId",pid);
-  const list=await q.find();
-  let paid=false;
-  for(const i of list){
-    const h=(Date.now()-i.get("lastCollected").getTime())/3600000;
-    if(h>=24 && i.get("daysCollected")<60){
-      i.increment("daysCollected",1);
-      i.set("lastCollected",new Date());
-      await i.save();
-      walletObj.increment("balance",daily);
-      paid=true;
-    }
-  }
-  if(paid){
-    await walletObj.save();
-    updateBalance();
-    alert("Income collected");
-  }else alert("Not ready");
-}
-
 function updateBalance(){
   balance.innerText="KES "+walletObj.get("balance");
 }
-
 async function deposit(){
   const amt=parseFloat(prompt("Amount"));
+  if(!amt) return;
   walletObj.increment("balance",amt);
   await walletObj.save();
   updateBalance();
 }
-
 async function withdraw(){
   const amt=parseFloat(prompt("Amount"));
   if(amt>walletObj.get("balance")) return alert("Insufficient");
   walletObj.increment("balance",-amt);
   await walletObj.save();
   updateBalance();
-  alert("Withdrawal requested");
 }
+
+/* SLIDER */
+let s=0;
+setInterval(()=>{
+  const slides=document.querySelectorAll(".slide");
+  slides[s].classList.remove("active");
+  s=(s+1)%slides.length;
+  slides[s].classList.add("active");
+},4000);
 </script>
+
 </body>
 </html>
