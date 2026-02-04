@@ -8,7 +8,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/parse/3.4.4/parse.min.js"></script>
 <script>
 Parse.initialize(
-   "eP6iUjmtNrg7SEqtwBkaNLUxtuGEHGk1TYBRz2Ck",
+  "eP6iUjmtNrg7SEqtwBkaNLUxtuGEHGk1TYBRz2Ck",
   "7v1nDUEFTO6WcYFRwjXncGJZOMbahhuLE9KKFMw3"
 );
 Parse.serverURL = "https://parseapi.back4app.com/";
@@ -34,7 +34,7 @@ nav button{flex:1;background:none;color:#000}
 <h3 id="authTitle">Login</h3>
 
 <input id="phone" placeholder="07XXXXXXXX">
-<input id="password" type="password" placeholder="4-digit Password">
+<input id="password" type="password" placeholder="Password">
 <input id="confirm" type="password" placeholder="Confirm Password" style="display:none">
 
 <button id="loginBtn" onclick="login()">Login</button>
@@ -67,6 +67,7 @@ New user? Create account
 let walletObj;
 let isRegister=false;
 
+/* PHONE NORMALIZER */
 function cleanPhone(p){
  p=p.replace(/\D/g,'');
  if(p.startsWith("0")) p="254"+p.substring(1);
@@ -74,48 +75,77 @@ function cleanPhone(p){
  return p;
 }
 
+/* SWITCH LOGIN / REGISTER */
 function switchAuth(){
  isRegister=!isRegister;
  authTitle.innerText=isRegister?"Create Account":"Login";
  confirm.style.display=isRegister?"block":"none";
  loginBtn.style.display=isRegister?"none":"block";
  registerBtn.style.display=isRegister?"block":"none";
+ password.placeholder=isRegister?"4-digit PIN":"Password";
  switchText.innerText=isRegister
   ?"Already have an account? Login"
   :"New user? Create account";
 }
 
+/* SHOW SECTIONS */
 function show(id){
  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
  document.getElementById(id).classList.add("active");
 }
 
-/* REGISTER */
+/* AUTO LOGIN */
+document.addEventListener("DOMContentLoaded", async()=>{
+ if(Parse.User.current()){
+   auth.style.display="none";
+   nav.style.display="flex";
+   await loadWallet();
+   generateProducts();
+   show("products");
+ }
+});
+
+/* REGISTER (NEW USERS ONLY – 4 DIGIT PIN) */
 async function register(){
- const phoneNum=cleanPhone(phone.value);
- const pw=password.value;
- const cp=confirm.value;
+ try{
+   const phoneNum=cleanPhone(phone.value);
+   const pw=password.value;
+   const cp=confirm.value;
 
- if(!/^\d{4}$/.test(pw)) return alert("Password must be 4 digits");
- if(pw!==cp) return alert("Passwords do not match");
+   if(!/^\d{4}$/.test(pw))
+     return alert("PIN must be exactly 4 digits");
 
- const user=new Parse.User();
- user.set("username",phoneNum);
- user.set("password",pw);
+   if(pw!==cp)
+     return alert("Passwords do not match");
 
- await user.signUp();
- alert("Account created. Login now.");
- switchAuth();
+   const user=new Parse.User();
+   user.set("username",phoneNum);
+   user.set("password",pw);
+
+   await user.signUp();
+   alert("Account created. Please login.");
+   switchAuth();
+ }catch(e){
+   alert("Registration failed: "+e.message);
+ }
 }
 
-/* LOGIN */
+/* LOGIN (OLD + NEW USERS) */
 async function login(){
- await Parse.User.logIn(cleanPhone(phone.value),password.value);
- auth.style.display="none";
- nav.style.display="flex";
- await loadWallet();
- generateProducts();
- show("products");
+ try{
+   await Parse.User.logIn(
+     cleanPhone(phone.value),
+     password.value
+   );
+
+   auth.style.display="none";
+   nav.style.display="flex";
+   await loadWallet();
+   generateProducts();
+   show("products");
+ }catch(e){
+   alert("Login failed: "+e.message);
+ }
 }
 
 /* WALLET */
@@ -135,7 +165,7 @@ async function loadWallet(){
  balance.innerText="KES "+walletObj.get("balance");
 }
 
-/* PRODUCTS DATA */
+/* PRODUCTS */
 const products=[
  {id:1,invest:900,daily:60},
  {id:2,invest:1500,daily:90},
@@ -155,13 +185,13 @@ function generateProducts(){
   const info=inv[p.id]||{days:0,last:null};
 
   productList.innerHTML+=`
-  <div class="product">
-   <b>Invest KES ${p.invest}</b>
-   <p>Daily: KES ${p.daily}</p>
-   <p>Days collected: ${info.days}/60</p>
-   <button onclick="collect(${p.id})"
-    class="collect-orange">Collect</button>
-  </div>`;
+   <div class="product">
+    <b>Invest KES ${p.invest}</b>
+    <p>Daily: KES ${p.daily}</p>
+    <p>Days collected: ${info.days}/60</p>
+    <button class="collect-orange"
+     onclick="collect(${p.id})">Collect</button>
+   </div>`;
  });
 }
 
@@ -171,7 +201,6 @@ async function collect(pid){
  const today=new Date().toDateString();
 
  if(!inv[pid]) inv[pid]={days:0,last:null};
-
  if(inv[pid].days>=60) return alert("Completed");
  if(inv[pid].last===today) return alert("Already collected today");
 
