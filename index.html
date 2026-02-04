@@ -8,10 +8,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/parse/3.4.4/parse.min.js"></script>
 <script>
 Parse.initialize(
- "eP6iUjmtNrg7SEqtwBkaNLUxtuGEHGk1TYBRz2Ck",
- "7v1nDUEFTO6WcYFRwjXncGJZOMbahhuLE9KKFMw3"
+   "eP6iUjmtNrg7SEqtwBkaNLUxtuGEHGk1TYBRz2Ck",
+  ""7v1nDUEFTO6WcYFRwjXncGJZOMbahhuLE9KKFMw3"
 );
-Parse.serverURL="https://parseapi.back4app.com/";
+Parse.serverURL = "https://parseapi.back4app.com/";
 </script>
 
 <style>
@@ -21,35 +21,40 @@ input,button{width:100%;padding:14px;margin:8px 0;border-radius:25px}
 button{background:#2196f3;color:#fff;border:none}
 .collect-orange{background:orange}
 .section{display:none}.active{display:block}
+.product{border:1px solid #ddd;padding:15px;margin:10px 0;border-radius:12px}
 nav{position:fixed;bottom:0;left:0;right:0;display:none;background:#fff}
 nav button{flex:1;background:none;color:#000}
-.product{border:1px solid #ddd;padding:15px;margin:10px 0;border-radius:12px}
 </style>
 </head>
 
 <body>
 
+<!-- AUTH -->
 <div class="container" id="auth">
 <h3 id="authTitle">Login</h3>
-<input id="phone" placeholder="+2547XXXXXXXX">
-<input id="password" type="password" placeholder="Password">
+
+<input id="phone" placeholder="07XXXXXXXX">
+<input id="password" type="password" placeholder="4-digit Password">
 <input id="confirm" type="password" placeholder="Confirm Password" style="display:none">
-<input id="referralInput" placeholder="Referral Code (optional)" style="display:none">
+
 <button id="loginBtn" onclick="login()">Login</button>
-<button id="registerBtn" onclick="register()" style="display:none">Register</button>
-<p onclick="switchAuth()" style="text-align:center;cursor:pointer" id="switchText">Register</p>
+<button id="registerBtn" onclick="register()" style="display:none">Create Account</button>
+
+<p id="switchText" onclick="switchAuth()" style="text-align:center;cursor:pointer">
+New user? Create account
+</p>
 </div>
 
+<!-- PRODUCTS -->
 <div class="container section" id="products">
-<h3>Products</h3>
+<h3>Investment Products</h3>
 <div id="productList"></div>
 </div>
 
+<!-- WALLET -->
 <div class="container section" id="wallet">
 <h3>Wallet</h3>
 <p>Balance: <b id="balance">KES 0</b></p>
-<button onclick="deposit()">Deposit</button>
-<button onclick="withdraw()">Withdraw</button>
 </div>
 
 <nav id="nav">
@@ -59,15 +64,25 @@ nav button{flex:1;background:none;color:#000}
 </nav>
 
 <script>
-let walletObj,isRegister=false;
+let walletObj;
+let isRegister=false;
+
+function cleanPhone(p){
+ p=p.replace(/\D/g,'');
+ if(p.startsWith("0")) p="254"+p.substring(1);
+ if(p.startsWith("7")) p="254"+p;
+ return p;
+}
 
 function switchAuth(){
  isRegister=!isRegister;
+ authTitle.innerText=isRegister?"Create Account":"Login";
  confirm.style.display=isRegister?"block":"none";
- referralInput.style.display=isRegister?"block":"none";
  loginBtn.style.display=isRegister?"none":"block";
  registerBtn.style.display=isRegister?"block":"none";
- authTitle.innerText=isRegister?"Register":"Login";
+ switchText.innerText=isRegister
+  ?"Already have an account? Login"
+  :"New user? Create account";
 }
 
 function show(id){
@@ -75,22 +90,27 @@ function show(id){
  document.getElementById(id).classList.add("active");
 }
 
+/* REGISTER */
 async function register(){
- const phoneNum=phone.value.replace(/\D/g,'');
- if(password.value!==confirm.value) return alert("Passwords mismatch");
+ const phoneNum=cleanPhone(phone.value);
+ const pw=password.value;
+ const cp=confirm.value;
+
+ if(!/^\d{4}$/.test(pw)) return alert("Password must be 4 digits");
+ if(pw!==cp) return alert("Passwords do not match");
 
  const user=new Parse.User();
  user.set("username",phoneNum);
- user.set("password",password.value);
- user.set("referralCode","OZ"+Math.floor(Math.random()*100000));
- user.set("invited",referralInput.value?true:false);
+ user.set("password",pw);
+
  await user.signUp();
- alert("Account created");
+ alert("Account created. Login now.");
  switchAuth();
 }
 
+/* LOGIN */
 async function login(){
- await Parse.User.logIn(phone.value.replace(/\D/g,''),password.value);
+ await Parse.User.logIn(cleanPhone(phone.value),password.value);
  auth.style.display="none";
  nav.style.display="flex";
  await loadWallet();
@@ -98,71 +118,81 @@ async function login(){
  show("products");
 }
 
+/* WALLET */
 async function loadWallet(){
  const Wallet=Parse.Object.extend("Wallet");
  const q=new Parse.Query(Wallet);
  q.equalTo("user",Parse.User.current());
  walletObj=await q.first();
+
  if(!walletObj){
-   walletObj=new Wallet();
-   walletObj.set("user",Parse.User.current());
-   walletObj.set("balance",0);
-   walletObj.set("activated",Parse.User.current().get("invited"));
-   await walletObj.save();
+  walletObj=new Wallet();
+  walletObj.set("user",Parse.User.current());
+  walletObj.set("balance",0);
+  walletObj.set("investments",{});
+  await walletObj.save();
  }
  balance.innerText="KES "+walletObj.get("balance");
 }
+
+/* PRODUCTS DATA */
+const products=[
+ {id:1,invest:900,daily:60},
+ {id:2,invest:1500,daily:90},
+ {id:3,invest:2000,daily:150},
+ {id:4,invest:2700,daily:200},
+ {id:5,invest:3500,daily:250},
+ {id:6,invest:5000,daily:400},
+ {id:7,invest:8000,daily:700},
+ {id:8,invest:10000,daily:1050}
+];
 
 function generateProducts(){
  productList.innerHTML="";
- const activated=walletObj.get("activated");
- for(let i=1;i<=6;i++){
-  let daily=i*100;
+ const inv=walletObj.get("investments")||{};
+
+ products.forEach(p=>{
+  const info=inv[p.id]||{days:0,last:null};
+
   productList.innerHTML+=`
   <div class="product">
-   <b>Oil Product ${i}</b>
-   <p>Daily: ${daily}</p>
-   <button class="${activated?'collect-orange':''}"
-    onclick="${activated?`collect(${i},${daily})`:'alert("Activate account")'}">
-    Collect
-   </button>
+   <b>Invest KES ${p.invest}</b>
+   <p>Daily: KES ${p.daily}</p>
+   <p>Days collected: ${info.days}/60</p>
+   <button onclick="collect(${p.id})"
+    class="collect-orange">Collect</button>
   </div>`;
- }
+ });
 }
 
-async function collect(pid,amt){
+/* COLLECT */
+async function collect(pid){
+ const inv=walletObj.get("investments")||{};
  const today=new Date().toDateString();
- if(walletObj.get("last_"+pid)===today) return alert("Already collected");
- walletObj.increment("balance",amt);
- walletObj.set("last_"+pid,today);
+
+ if(!inv[pid]) inv[pid]={days:0,last:null};
+
+ if(inv[pid].days>=60) return alert("Completed");
+ if(inv[pid].last===today) return alert("Already collected today");
+
+ const product=products.find(p=>p.id===pid);
+ walletObj.increment("balance",product.daily);
+
+ inv[pid].days++;
+ inv[pid].last=today;
+
+ walletObj.set("investments",inv);
  await walletObj.save();
  balance.innerText="KES "+walletObj.get("balance");
-}
-
-async function deposit(){
- const amt=parseInt(prompt("Amount"));
- await Parse.Cloud.run("stkPush",{phone:Parse.User.current().get("username"),amount:amt});
- walletObj.set("activated",true); // 🔥 AUTO ACTIVATE
- await walletObj.save();
- alert("STK sent. Account activated.");
  generateProducts();
 }
 
-async function withdraw(){
- const amt=parseInt(prompt("Amount"));
- const W=Parse.Object.extend("Withdrawals");
- const w=new W();
- w.set("user",Parse.User.current());
- w.set("amount",amt);
- w.set("status","pending");
- await w.save();
- alert("Withdrawal request sent");
-}
-
+/* LOGOUT */
 async function logout(){
  await Parse.User.logOut();
  location.reload();
 }
 </script>
+
 </body>
 </html>
